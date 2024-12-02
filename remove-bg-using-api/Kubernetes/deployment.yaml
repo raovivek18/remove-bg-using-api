@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: py-bg-remover
+  labels:
+    app: py-bg-remover
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: py-bg-remover
+  template:
+    metadata:
+      labels:
+        app: py-bg-remover
+    spec:
+      containers:
+      - name: py-bg-remover
+        image: ranaumer001/py-bg-remover:latest
+        ports:
+        - containerPort: 5100

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umer's AI-Powered Background Remover</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+      body {
+          font-family: 'Roboto', sans-serif;
+          background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+          transition: background-color 0.5s, color 0.5s, background 0.5s;
+      }
+      .dark-mode {
+          background: linear-gradient(135deg, #1e1e1e, #121212);
+          color: #e0e0e0;
+      }
+      .drag-drop-area {
+          border: 2px dashed #6c757d;
+          border-radius: 20px;
+          padding: 40px;
+          text-align: center;
+          background: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          transition: background-color 0.3s, box-shadow 0.3s;
+      }
+      .drag-drop-area:hover {
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+      .dark-mode .drag-drop-area {
+          background: rgba(50, 50, 50, 0.9);
+          border-color: #909090;
+      }
+      .preview-img,
+      #output-img {
+          display: block;
+          max-width: 100%;
+          max-height: 300px;
+          margin: 0 auto; /* Centers the image horizontally */
+          border-radius: 10px;
+          border: 2px solid #ddd;
+          object-fit: contain; 
+          background-color: #f8f9fa; /* Default background color for empty space */
+          padding: 5px; /* Adds spacing around the image within the border */
+      }
+
+      .output-container,
+      #preview-container {
+          display: flex;
+          justify-content: center; /* Centers content horizontally */
+          align-items: center; /* Centers content vertically */
+          min-height: 300px;
+          background-color: #f8f9fa; /* Background color for the container */
+          border-radius: 10px;
+          border: 2px dashed #ddd; /* Dashed border for the containers */
+          padding: 10px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds subtle shadow */
+      }
+
+      button {
+          font-weight: bold;
+          border-radius: 20px;
+          padding: 10px 20px;
+          transition: transform 0.2s, box-shadow 0.3s;
+      }
+      button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      #custom-bg-color {
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          width: 40px;
+          height: 40px;
+          border: none;
+          border-radius: 50%;
+          background-color: #ffffff;
+          cursor: pointer;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      #custom-bg-color:hover {
+          transform: scale(1.3);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
+      #custom-bg-color:focus {
+          outline: none;
+          box-shadow: 0 0 10px 3px #007bff;
+      }
+      .output-container {
+          display: none;
+          margin-top: 30px;
+          padding: 20px;
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.8);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      .dark-mode .output-container {
+          background: rgba(40, 40, 40, 0.9);
+          box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+      }
+      .bg-options {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 15px;
+          margin-top: 20px;
+      }
+      .bg-options h6 {
+          margin-bottom: 10px;
+      }
+      h1 {
+          text-align: center;
+          font-weight: bold;
+          margin-bottom: 20px;
+          background: -webkit-linear-gradient(45deg, #6a11cb, #2575fc);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+      }
+      h5, h6 {
+          color: #6c757d;
+      }
+      .dark-mode h5, .dark-mode h6 {
+          color: #adb5bd;
+      }
+      .alert {
+          border-radius: 10px;
+          animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+          from {
+              opacity: 0;
+              transform: translateY(-10px);
+          }
+          to {
+              opacity: 1;
+              transform: translateY(0);
+          }
+      }
+      @media (max-width: 768px) {
+        body {
+            font-size: 90%;
+        }
+        .container {
+            padding: 10px;
+        }
+        .drag-drop-area {
+            padding: 15px;
+            font-size: 14px;
+        }
+        .preview-img {
+            max-height: 200px;
+        }
+        .output-container {
+            padding: 10px;
+        }
+        .bg-options {
+            flex-wrap: wrap;
+        }
+        #custom-bg-color {
+            width: 35px;
+            height: 35px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .preview-img {
+            max-height: 150px;
+        }
+        .drag-drop-area {
+            font-size: 12px;
+        }
+        #custom-bg-color {
+            width: 30px;
+            height: 30px;
+        }
+        button {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+    }
+
+    img {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+    }
+  </style>
+  
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>AI Background Remover</h1>
+            <button id="toggle-theme" class="btn btn-outline-secondary">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </div>
+
+        <form id="upload-form" method="POST" enctype="multipart/form-data">
+            <div id="drag-drop" class="drag-drop-area">
+                <p>Drag and drop your image here, or click to select</p>
+                <input type="file" name="file" id="file-input" accept="image/*" class="d-none">
+            </div>
+
+            <div id="preview-container" class="mt-4">
+              <img id="preview-img" class="preview-img" src="https://png.pngtree.com/png-vector/20230320/ourmid/pngtree-you-are-here-location-pointer-vector-png-image_6656543.png" alt="Image preview">
+            </div>
+          
+
+            <button type="submit" class="btn btn-primary mt-3" id="remove-bg-btn" disabled>
+                <i class="fas fa-magic"></i> Remove Background
+            </button>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mt-4">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div id="output-container" class="output-container mt-5">
+            <h5>Result</h5>
+            <img id="output-img" class="preview-img" alt="Processed image">
+            <div class="mt-3 bg-options">
+                <h6>Change Background:</h6>
+                <button class="btn btn-outline-secondary bg-change" data-color="transparent">Transparent</button>
+                <button class="btn btn-outline-secondary bg-change" data-color="white">White</button>
+                <button class="btn btn-outline-secondary bg-change" data-color="black">Black</button>
+                <label for="custom-bg-color" id="color-placeholder">Choose a color 👉 </label>
+                <input type="color" id="custom-bg-color" class="btn bg-change" value="#ffffff">
+
+            </div>
+            <button id="download-btn" class="btn btn-success mt-3">
+                <i class="fas fa-download"></i> Download Image
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const dragDropArea = document.getElementById('drag-drop');
+        const fileInput = document.getElementById('file-input');
+        const previewImg = document.getElementById('preview-img');
+        const removeBgBtn = document.getElementById('remove-bg-btn');
+        const outputContainer = document.getElementById('output-container');
+        const outputImg = document.getElementById('output-img');
+        const downloadBtn = document.getElementById('download-btn');
+        const customBgColor = document.getElementById('custom-bg-color');
+        const toggleTheme = document.getElementById('toggle-theme');
+        let darkMode = false;
+
+        // Toggle dark/light mode
+        toggleTheme.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            darkMode = !darkMode;
+            toggleTheme.innerHTML = darkMode ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+        });
+
+        // Drag and drop functionality
+        dragDropArea.addEventListener('click', () => fileInput.click());
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('drag-over');
+        });
+        dragDropArea.addEventListener('dragleave', () => dragDropArea.classList.remove('drag-over'));
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('drag-over');
+            fileInput.files = e.dataTransfer.files;
+            previewImage();
+        });
+
+        // Preview selected image
+        fileInput.addEventListener('change', previewImage);
+
+        function previewImage() {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    removeBgBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.querySelectorAll('.bg-change').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const color = e.target.dataset.color || customBgColor.value;
+                outputImg.style.backgroundColor = color; // Apply the background color to the image
+            });
+        });
+
+        // Listen for changes in the custom color picker
+        customBgColor.addEventListener('input', () => {
+            const color = customBgColor.value;
+            outputImg.style.backgroundColor = color; // Apply the selected color in real-time
+        });
+
+        // Function to apply background color
+        function applyBackgroundColor(color) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = outputImg;
+
+            // Set canvas dimensions to match the image
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+
+            // Draw the background color
+            ctx.fillStyle = color === 'transparent' ? 'rgba(0,0,0,0)' : color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the image on top
+            ctx.drawImage(img, 0, 0);
+
+            // Update the output image source
+            outputImg.src = canvas.toDataURL('image/png');
+        }
+
+
+        // Enable download functionality with updated background
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = outputImg.src;
+            link.download = 'processed-image.png';
+            link.click();
+        });
+
+        document.getElementById('custom-bg-color').addEventListener('input', function() {
+          var placeholder = document.getElementById('color-placeholder');
+          if (this.value !== '#ffffff') {  // If the color is changed from the default
+            placeholder.style.display = 'none';  // Hide the placeholder
+          } else {
+            placeholder.style.display = 'inline';  // Show the placeholder if color is reset
+          }
+        });
+
+        // Listen for changes in the custom color picker
+        customBgColor.addEventListener('input', () => {
+            const color = customBgColor.value;
+            outputImg.style.backgroundColor = color; // Apply the selected color in real-time
+        });
+
+
+
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(document.getElementById('upload-form'));
+          const removeBgBtn = document.getElementById('remove-bg-btn');
+          const outputImg = document.getElementById('output-img');
+          const outputContainer = document.getElementById('output-container');
+          const previewImg = document.getElementById('preview-img');
+
+          // Disable the button to prevent multiple submissions
+          removeBgBtn.disabled = true;
+          removeBgBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+          try {
+              const response = await fetch('/', {
+                  method: 'POST',
+                  body: formData,
+              });
+
+              if (response.ok) {
+                  const blob = await response.blob();
+                  const objectURL = URL.createObjectURL(blob);
+
+                  // Update output image
+                  outputImg.src = objectURL;
+                  outputContainer.style.display = 'block';
+
+                  // Enable the download button
+                  const downloadBtn = document.getElementById('download-btn');
+                  downloadBtn.onclick = () => {
+                      const link = document.createElement('a');
+                      link.href = objectURL;
+                      link.download = 'image_rmbg.png';
+                      link.click();
+                  };
+
+                  // Reset UI state
+                  removeBgBtn.disabled = false;
+                  removeBgBtn.innerHTML = '<i class="fas fa-magic"></i> Remove Background';
+              } else {
+                  const errorText = await response.text();
+                  alert(`Error: ${errorText}`);
+                  removeBgBtn.disabled = false;
+                  removeBgBtn.innerHTML = '<i class="fas fa-magic"></i> Remove Background';
+              }
+          } catch (error) {
+              console.error('Unexpected error:', error);
+              alert('An unexpected error occurred. Please try again.');
+              removeBgBtn.disabled = false;
+              removeBgBtn.innerHTML = '<i class="fas fa-magic"></i> Remove Background';
+          }
+      });
+
+    </script>
+</body>
+</html>

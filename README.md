@@ -56,10 +56,10 @@ An image background remover written in Python with CI/CD pipeline integration us
 ## ⚡ **Example Usage**
 
 - **Upload Interface:**  
-  ![Upload Interface]([https://via.placeholder.com/600x400?text=Upload+Screen](https://postimg.cc/dD8P0g4Q))  
+  ![Upload Interface]([https://postimg.cc/dD8P0g4Q])  
 
 - **Processed Image:**  
-  ![Processed Image]([https://via.placeholder.com/600x400?text=Background+Removed](https://postimg.cc/zLL4YQyr))
+  ![Processed Image]([https://postimg.cc/zLL4YQyr])
 
 ---
 
